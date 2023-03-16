@@ -31,6 +31,7 @@ rule all:
         'results/00_QC/ReadsMultiQCReport.html',
         'results/00_QC/KDRReadsMultiQCReport.html',
         expand('results/02_kneaddata/{sample}.fastq', sample=FIDs),
+        'results/00_QC/seqkit.report.KDR.temps.txt'
 
 
 rule fastqc:
@@ -121,10 +122,10 @@ rule kneaddata:
     input:
         'results/01_readMasking/{sample}.bbduk.prinseq.fastq.gz'
     output:
-        trimReads ='results/02_kneaddata/{sample}.trimmed.fastq',
-        trfReads ='results/02_kneaddata/{sample}.repeats.removed.fastq',
-        ovineReads ='results/02_kneaddata/{sample}_GCF_016772045.1-ARS-UI-Ramb-v2.0_bowtie2_contam.fastq',
-        silvaReads ='results/02_kneaddata/{sample}_SLIVA138.1_bowtie2_contam.fastq',
+        trimReads = temp('results/02_kneaddata/{sample}.trimmed.fastq'),
+        trfReads = temp('results/02_kneaddata/{sample}.repeats.removed.fastq'),
+        ovineReads = temp('results/02_kneaddata/{sample}_GCF_016772045.1-ARS-UI-Ramb-v2.0_bowtie2_contam.fastq'),
+        silvaReads = temp('results/02_kneaddata/{sample}_SLIVA138.1_bowtie2_contam.fastq'),
         KDRs ='results/02_kneaddata/{sample}.fastq',
     conda:
         'biobakery'
@@ -185,4 +186,19 @@ rule multiQCKDRs:
         '-f '
         '--interactive '
         '{input.fastqc}'
+
+
+rule seqkitKneaddataTemps:
+    input:
+        trimReads = expand('results/02_kneaddata/{sample}.trimmed.fastq', sample = FIDs),
+        trfReads = expand('results/02_kneaddata/{sample}.repeats.removed.fastq', sample = FIDs),
+        ovineReads = expand('results/02_kneaddata/{sample}_GCF_016772045.1-ARS-UI-Ramb-v2.0_bowtie2_contam.fastq', sample = FIDs),
+        silvaReads = expand('results/02_kneaddata/{sample}_SLIVA138.1_bowtie2_contam.fastq', sample = FIDs),
+    output:
+        'results/00_QC/seqkit.report.KDR.temps.txt'
+    conda:
+        'seqkit'
+    threads: 12
+    shell:
+        'seqkit stats -j {threads} -a {input.trimReads} {input.trfReads} {input.ovineReads} {input.silvaReads} > {output} '
 
