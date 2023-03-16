@@ -55,7 +55,7 @@ rule fastqc:
 
 rule multiQC:
     input:
-        fastqc= expand('results/00_QC/fastqc/{sample}_fastqc.zip', samples = FIDs)
+        fastqc= expand('results/00_QC/fastqc/{sample}_fastqc.zip', sample = FIDs)
     output:
         multiQC='results/00_QC/ReadsMultiQCReport.html'
     conda:
@@ -172,7 +172,7 @@ rule fastqcKDRs:
 
 rule multiQCKDRs:
     input:
-        fastqc= expand('results/00_QC/fastqcKDR/{sample}_kneaddata_fastqc.zip', samples = FIDs)
+        fastqc= expand('results/00_QC/fastqcKDR/{sample}_kneaddata_fastqc.zip', sample = FIDs)
     output:
         'results/00_QC/KDRReadsMultiQCReport.html'
     conda:
