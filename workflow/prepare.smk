@@ -108,13 +108,13 @@ rule prinseq:
         'prinseq++ '
         '-threads {threads} '
         '-fastq {input}  '
-        '-out_name {wildcards.sample} '
+        '-out_name results/01_readMasking/{wildcards.sample} '
         '-min_len 40 '
         '-lc_entropy=0.5 '
         '-lc_dust=0.5 '
         '-out_gz '
         '2>&1 | tee {log}  && '
-        'mv {wildcards.sample}_good_out.fastq.gz {output.maskedReads} '
+        'mv results/01_readMasking/{wildcards.sample}_good_out.fastq.gz {output.maskedReads} '
 
 
 rule kneaddata:
