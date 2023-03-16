@@ -121,7 +121,7 @@ rule kneaddata:
     input:
         'results/01_readMasking/{sample}.bbduk.prinseq.fastq.gz'
     output:
-        trimReads ='results/02_kneaddata/{samples}.trimmed.fastq',
+        trimReads ='results/02_kneaddata/{sample}.trimmed.fastq',
         trfReads ='results/02_kneaddata/{sample}.repeats.removed.fastq',
         ovineReads ='results/02_kneaddata/{sample}_GCF_016772045.1-ARS-UI-Ramb-v2.0_bowtie2_contam.fastq',
         silvaReads ='results/02_kneaddata/{sample}_SLIVA138.1_bowtie2_contam.fastq',
@@ -129,7 +129,7 @@ rule kneaddata:
     conda:
         'biobakery'
     log:
-        'logs/kneaddata/{samples}.kneaddata.log'
+        'logs/kneaddata/{sample}.kneaddata.log'
     threads: 8
     resources:
         mem_gb=8,
