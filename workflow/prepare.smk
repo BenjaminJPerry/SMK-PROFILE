@@ -5,7 +5,7 @@
 # Maintainer: Benjamin J Perry
 # Email: ben.perry@agresearch.co.nz
 
-configfile: "config/config.yaml"
+#configfile: "config/config.yaml"
 
 
 import os
