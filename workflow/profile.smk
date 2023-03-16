@@ -39,38 +39,6 @@ rule all:
         # 'results/centrifuge.counts.bracken.T1.species.txt',
 
 
-rule seqkitRaw:
-    output:
-        'results/00_QC/seqkit.report.raw.txt'
-    conda:
-        'seqkit'
-    threads: 12
-    shell:
-        'seqkit stats -j {threads} -a fastq/*.fastq.gz > {output} '
-
-
-rule seqkitMasking:
-    output:
-        'results/00_QC/seqkit.report.masking.txt'
-    conda:
-        'seqkit'
-    threads: 12
-    shell:
-        'seqkit stats -j {threads} -a results/01_readMasking/*.fastq.gz > {output} '
-
-
-
-rule seqkitKneaddata:
-    output:
-        'results/00_QC/seqkit.report.KDR.txt'
-    conda:
-        'seqkit'
-    threads: 12
-    shell:
-        'seqkit stats -j {threads} -a results/02_kneaddata/*fastq > {output} '
-
-
-
 #TODO: consider using an input function to filter the seqkit summary tables for input to the profile.smk pipeline
 
 

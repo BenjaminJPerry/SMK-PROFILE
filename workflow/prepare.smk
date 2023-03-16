@@ -31,7 +31,10 @@ rule all:
         'results/00_QC/ReadsMultiQCReport.html',
         'results/00_QC/KDRReadsMultiQCReport.html',
         expand('results/02_kneaddata/{sample}.fastq', sample=FIDs),
-        'results/00_QC/seqkit.report.KDR.temps.txt'
+        'results/00_QC/seqkit.report.KDR.temps.txt',
+        'results/00_QC/seqkit.report.raw.txt',
+        'results/00_QC/seqkit.report.masked.txt',
+        'results/00_QC/seqkit.report.KDR.txt'
 
 
 rule fastqc:
@@ -202,3 +205,37 @@ rule seqkitKneaddataTemps:
     shell:
         'seqkit stats -j {threads} -a {input.trimReads} {input.trfReads} {input.ovineReads} {input.silvaReads} > {output} '
 
+
+rule seqkitRaw:
+    output:
+        'results/00_QC/seqkit.report.raw.txt'
+    conda:
+        'seqkit'
+    threads: 12
+    shell:
+        'seqkit stats -j {threads} -a fastq/*.fastq.gz > {output} '
+
+
+rule seqkitMasking:
+    input:
+        bbdukReads = expand('results/01_readMasking/{sample}.bbduk.fastq.gz', sample = FIDs),
+        prinseqReads = expand('results/01_readMasking/{sample}.bbduk.prinseq.fastq.gz', sample = FIDs),
+    output:
+        'results/00_QC/seqkit.report.masked.txt'
+    conda:
+        'seqkit'
+    threads: 12
+    shell:
+        'seqkit stats -j {threads} -a {input.bbdukReads} {input.prinseqReads} > {output} '
+
+
+rule seqkitKneaddata:
+    input:
+        KDRs = expand('results/02_kneaddata/{sample}.fastq', sample = FIDs),
+    output:
+        'results/00_QC/seqkit.report.KDR.txt'
+    conda:
+        'seqkit'
+    threads: 12
+    shell:
+        'seqkit stats -j {threads} -a {input.KDRs} > {output} '
