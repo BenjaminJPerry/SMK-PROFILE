@@ -30,7 +30,7 @@ rule all:
     input:
         'results/00_qc/ReadsMultiQCReport.html',
         'results/00_qc/KDRReadsMultiQCReport.html',
-        expand('results/02_kneaddata/{sample}.fastq', samples=FIDs),
+        expand('results/02_kneaddata/{sample}.fastq', sample=FIDs),
 
 
 rule fastqc:
