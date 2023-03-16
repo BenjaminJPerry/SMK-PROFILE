@@ -44,7 +44,7 @@ rule fastqc:
         # 'docker://biocontainers/fastqc:v0.11.9_cv8'
     threads: 2
     message:
-        'Running QC on reads: {wildcards.samples}\n'
+        'Running QC on reads: {wildcards.sample}\n'
     shell:
         'fastqc '
         '-o results/00_QC/fastqc/ '
@@ -135,7 +135,7 @@ rule kneaddata:
         mem_gb=8,
         time='02:00:00'
     message:
-        'kneaddata: {wildcards.samples}\n'
+        'kneaddata: {wildcards.sample}\n'
     shell:
         'kneaddata '
         '--trimmomatic-options "ILLUMINACLIP:/home/perrybe/conda-envs/biobakery/share/trimmomatic-0.39-2/adapters/illuminaAdapters.fa:2:30:10 MINLEN:40" '
