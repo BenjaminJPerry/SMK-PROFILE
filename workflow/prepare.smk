@@ -153,9 +153,9 @@ rule kneaddata:
 
 rule fastqcKDRs:
     input:
-        fastq = 'results/02_kneaddata/{sample}_kneaddata.fastq'
+        fastq = 'results/02_kneaddata/{sample}.fastq'
     output:
-        'results/00_QC/fastqcKDR/{sample}_kneaddata_fastqc.zip'
+        'results/00_QC/fastqcKDR/{sample}_fastqc.zip'
     conda:
         'fastqc'
         # 'docker://biocontainers/fastqc:v0.11.9_cv8'
@@ -172,7 +172,7 @@ rule fastqcKDRs:
 
 rule multiQCKDRs:
     input:
-        fastqc= expand('results/00_QC/fastqcKDR/{sample}_kneaddata_fastqc.zip', sample = FIDs)
+        fastqc= expand('results/00_QC/fastqcKDR/{sample}_fastqc.zip', sample = FIDs)
     output:
         'results/00_QC/KDRReadsMultiQCReport.html'
     conda:
