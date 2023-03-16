@@ -5,11 +5,14 @@
 # Maintainer: Benjamin J Perry
 # Email: ben.perry@agresearch.co.nz
 
-configfile: "config/config.yaml"
+#configfile: "config/config.yaml"
+
 
 import os
 
-FID, = glob_wildcards("results/02_kneaddata/{fid}_kneaddata.trimmed.fastq")
+
+FID, = glob_wildcards("'results/02_kneaddata/{sample}.fastq'")
+
 
 onstart:
     print(f"Working directory: {os.getcwd()}")
@@ -23,39 +26,48 @@ onstart:
     os.system('echo "  CONDA VERSION: $(conda --version)"')
 
 
-	
 rule all:
     input:
-        'results/00_qc/seqkit.report.raw.txt',
-        'results/00_qc/seqkit.report.filtered.txt',
-        expand('results/04_braken/{sample}.GTDB.centrifuge.k2report.T1.bracken.genus.report', sample=FID),
-        expand('results/04_braken/{sample}.GTDB.centrifuge.k2report.T1.bracken.species.report', sample=FID),
-        #expand('results/03_humann3Uniref50EC/{sample}_pathcoverage.tsv', sample=FID),
-        'results/centrifuge.counts.all.txt',
-        'results/centrifuge.counts.bracken.T1.genus.txt',
-        'results/centrifuge.counts.bracken.T1.species.txt',
+        'results/00_QC/seqkit.report.raw.txt',
+        'results/00_QC/seqkit.report.masking.txt',
+        'results/00_QC/seqkit.report.KDR.txt',
+        # expand('results/04_braken/{sample}.GTDB.centrifuge.k2report.T1.bracken.genus.report', sample=FID),
+        # expand('results/04_braken/{sample}.GTDB.centrifuge.k2report.T1.bracken.species.report', sample=FID),
+        # expand('results/03_humann3Uniref50EC/{sample}_pathcoverage.tsv', sample=FID),
+        # 'results/centrifuge.counts.all.txt',
+        # 'results/centrifuge.counts.bracken.T1.genus.txt',
+        # 'results/centrifuge.counts.bracken.T1.species.txt',
 
 
-
-rule seqkitQCRaw:
+rule seqkitRaw:
     output:
-        'results/00_qc/seqkit.report.raw.txt'
+        'results/00_QC/seqkit.report.raw.txt'
     conda:
         'seqkit'
     threads: 12
     shell:
-        'seqkit stats -j {threads} -a results/01_cutadapt/*.fastq.gz > {output} '
+        'seqkit stats -j {threads} -a fastq/*.fastq.gz > {output} '
 
 
-
-rule seqkitQCFiltered:
+rule seqkitMasking:
     output:
-        'results/00_qc/seqkit.report.filtered.txt'
+        'results/00_QC/seqkit.report.masking.txt'
     conda:
         'seqkit'
     threads: 12
     shell:
-        'seqkit stats -j {threads} -a results/02_kneaddata/*kneaddata.trimmed.fastq > {output} '
+        'seqkit stats -j {threads} -a results/01_readMasking/*.fastq.gz > {output} '
+
+
+
+rule seqkitKneaddata:
+    output:
+        'results/00_QC/seqkit.report.KDR.txt'
+    conda:
+        'seqkit'
+    threads: 12
+    shell:
+        'seqkit stats -j {threads} -a results/02_kneaddata/*fastq > {output} '
 
 
 
@@ -72,8 +84,7 @@ rule generateCentrifugeSampleSheet:
         sampleSheet='resources/centrifugeSampleSheet.tsv',
     threads:2
     shell: 
-        './workflow/scripts/generate_centrifuge_sample_sheet.sh -d results/02_kneaddata -p kneaddata.trimmed.fastq -o {output.sampleSheet} '
-
+        './workflow/scripts/generate_centrifuge_sample_sheet.sh -d results/02_kneaddata -p fastq -o {output.sampleSheet} '
 
 
 rule centrifugeGTDB:
@@ -141,7 +152,6 @@ rule brackenCentrifugeGenus:
         '&> {log} '
 
 
-
 rule brackenCentrifugeSpecies:
     input:
         centrifugeKraken2='results/03_centrifuge/{samples}.GTDB.centrifuge.k2report',
@@ -165,10 +175,9 @@ rule brackenCentrifugeSpecies:
         '&> {log} '
 
 
-
 rule humann3Uniref50EC:
     input:
-        kneaddataReads='results/02_kneaddata/{samples}_kneaddata.trimmed.fastq'
+        kneaddataReads='results/02_kneaddata/{samples}.fastq'
     output:
         genes = 'results/03_humann3Uniref50EC/{samples}_genefamilies.tsv',
         pathways = 'results/03_humann3Uniref50EC/{samples}_pathabundance.tsv',
