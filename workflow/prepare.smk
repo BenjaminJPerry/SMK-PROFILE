@@ -98,7 +98,7 @@ rule prinseq:
         'results/01_readMasking/{sample}.bbduk.fastq.gz'
     output:
         maskedReads = 'results/01_readMasking/{sample}.bbduk.prinseq.fastq.gz',
-        temp('results/01_readMasking/{sample}_bad_out.fastq.gz'),
+        badReads = temp('results/01_readMasking/{sample}_bad_out.fastq.gz'),
     log:
         'logs/prinseq/{sample}.prinseq.log'
     conda:
