@@ -28,8 +28,8 @@ FIDs, = glob_wildcards("fastq/{sample}.fastq.gz")
 
 rule all:
     input:
-        'results/00_qc/ReadsMultiQCReport.html',
-        'results/00_qc/KDRReadsMultiQCReport.html',
+        'results/00_QC/ReadsMultiQCReport.html',
+        'results/00_QC/KDRReadsMultiQCReport.html',
         expand('results/02_kneaddata/{sample}.fastq', sample=FIDs),
 
 
