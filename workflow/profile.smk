@@ -34,8 +34,8 @@ rule all:
         'results/centrifuge.counts.all.txt',
         'results/centrifuge.counts.bracken.T10.genus.txt',
         # 'results/centrifuge.counts.bracken.T1.species.txt',
-        expand('results/kraken2GTDB/{sample}.GTDB.k2report', sample = FID),
-        expand('results/brackenGenus/{sample}.breport', sample = FID),
+        # expand('results/kraken2GTDB/{sample}.GTDB.k2report', sample = FID),
+        # expand('results/brackenGenus/{sample}.breport', sample = FID),
         'results/kraken2.bracken.genus.report.txt',
 
 
