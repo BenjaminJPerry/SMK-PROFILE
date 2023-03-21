@@ -5,13 +5,13 @@
 # Maintainer: Benjamin J Perry
 # Email: ben.perry@agresearch.co.nz
 
-#configfile: "config/config.yaml"
+# configfile: "config/config.yaml"
 
 
 import os
 
 
-FID, = glob_wildcards("'results/02_kneaddata/{sample}.fastq'")
+(FID,) = glob_wildcards("'results/02_kneaddata/{sample}.fastq'")
 
 
 onstart:
@@ -28,86 +28,91 @@ onstart:
 
 rule all:
     input:
-        'results/centrifuge.counts.all.txt',
-        'results/centrifuge.counts.bracken.T1.genus.txt',
-        'results/centrifuge.counts.bracken.T1.species.txt',
+        "results/centrifuge.counts.all.txt",
+        "results/centrifuge.counts.bracken.T1.genus.txt",
+        "results/centrifuge.counts.bracken.T1.species.txt",
         # 'results/kraken2.bracken.genus.report.txt',
-        expand('results/03_humann3Uniref50EC/{sample}_pathcoverage.tsv', sample=FID),
+        expand("results/03_humann3Uniref50EC/{sample}_pathcoverage.tsv", sample=FID),
 
 
 # Centrifuge rules
 
-localrules: generateCentrifugeSampleSheet
+
+localrules:
+    generateCentrifugeSampleSheet,
+
 
 rule generateCentrifugeSampleSheet:
     output:
-        sampleSheet='resources/centrifugeSampleSheet.tsv',
-    threads:2
-    shell: 
-        './workflow/scripts/generate_centrifuge_sample_sheet.sh -d results/02_kneaddata -p fastq -o {output.sampleSheet} '
+        sampleSheet="resources/centrifugeSampleSheet.tsv",
+    threads: 2
+    shell:
+        "./workflow/scripts/generate_centrifuge_sample_sheet.sh -d results/02_kneaddata -p fastq -o {output.sampleSheet} "
 
 
 rule centrifugeGTDB:
     input:
-        sampleSheet='resources/centrifugeSampleSheet.tsv'
+        sampleSheet="resources/centrifugeSampleSheet.tsv",
     output:
-        out=expand('results/03_centrifuge/{sample}.GTDB.centrifuge', sample=FID),
-        report=expand('results/03_centrifuge/{sample}.GTDB.centrifuge.report', sample=FID),
+        out=expand("results/03_centrifuge/{sample}.GTDB.centrifuge", sample=FID),
+        report=expand(
+            "results/03_centrifuge/{sample}.GTDB.centrifuge.report", sample=FID
+        ),
     log:
-        'logs/centrifuge.GTDB.multi.log'
+        "logs/centrifuge.GTDB.multi.log",
     conda:
-        'centrifuge'
+        "centrifuge"
     threads: 32
     resources:
-        mem_gb = lambda wildacards, attempt: 140 + ((attempt -1) + 20),
-        time = "06:00:00"
+        mem_gb=lambda wildacards, attempt: 140 + ((attempt - 1) + 20),
+        time="06:00:00",
     shell:
-        'centrifuge ' 
-        '-x /bifo/scratch/2022-BJP-GTDB/2022-BJP-GTDB/centrifuge/GTDB '
-        '--sample-sheet {input.sampleSheet} '
-        '-t '
-        '--threads {threads} '
-        '&> {log} '
+        "centrifuge "
+        "-x /bifo/scratch/2022-BJP-GTDB/2022-BJP-GTDB/centrifuge/GTDB "
+        "--sample-sheet {input.sampleSheet} "
+        "-t "
+        "--threads {threads} "
+        "&> {log} "
 
 
 rule centrifugeKrakenReport:
     input:
-        centrifuge='results/03_centrifuge/{sample}.GTDB.centrifuge',
+        centrifuge="results/03_centrifuge/{sample}.GTDB.centrifuge",
     output:
-        centrifugeKraken2='results/03_centrifuge/{sample}.GTDB.centrifuge.k2report'
+        centrifugeKraken2="results/03_centrifuge/{sample}.GTDB.centrifuge.k2report",
     log:
-        'logs/centirifuge){sample}.centrifuge.to.kraken2.log'
+        "logs/centirifuge){sample}.centrifuge.to.kraken2.log",
     conda:
-        'centrifuge'
+        "centrifuge"
     threads: 2
     shell:
-        'centrifuge-kreport '
-        '-x /bifo/scratch/2022-BJP-GTDB/2022-BJP-GTDB/centrifuge/GTDB '
-        '{input.centrifuge} > '
-        '{output.centrifugeKraken2}'
+        "centrifuge-kreport "
+        "-x /bifo/scratch/2022-BJP-GTDB/2022-BJP-GTDB/centrifuge/GTDB "
+        "{input.centrifuge} > "
+        "{output.centrifugeKraken2}"
 
 
 rule combineCentrifugeReports:
     input:
-        expand('results/03_centrifuge/{sample}.GTDB.centrifuge.k2report', sample=FID),
+        expand("results/03_centrifuge/{sample}.GTDB.centrifuge.k2report", sample=FID),
     output:
-        'results/03_centrifuge/rough.counts.all.txt'
+        "results/03_centrifuge/rough.counts.all.txt",
     conda:
-        'kraken2'
+        "kraken2"
     threads: 2
     shell:
-        'combine_kreports.py -o {output} -r {input} '
+        "combine_kreports.py -o {output} -r {input} "
 
 
 rule formatCombinedCentrifugeReport:
     input:
-        'results/03_centrifuge/rough.counts.all.txt'
+        "results/03_centrifuge/rough.counts.all.txt",
     output:
-        'results/centrifuge.counts.all.txt'
+        "results/centrifuge.counts.all.txt",
     threads: 2
     shell:
-        'workflow/scripts/reformat_centrifuge_count_matrix.sh -i {input} -p results/03_centrifuge && '
-        'mv results/03_centrifuge/clean.count.matrix.txt {output} '
+        "workflow/scripts/reformat_centrifuge_count_matrix.sh -i {input} -p results/03_centrifuge && "
+        "mv results/03_centrifuge/clean.count.matrix.txt {output} "
 
 
 # Centrifuge Bracken Rules
@@ -115,166 +120,172 @@ rule formatCombinedCentrifugeReport:
 
 rule brackenCentrifugeGenus:
     input:
-        centrifugeKraken2='results/03_centrifuge/{sample}.GTDB.centrifuge.k2report',
+        centrifugeKraken2="results/03_centrifuge/{sample}.GTDB.centrifuge.k2report",
     output:
-        braken='results/04_braken/{sample}.GTDB.centrifuge.k2report.T1.bracken.genus',
-        brakenReport='results/04_braken/{sample}.GTDB.centrifuge.k2report.T1.bracken.genus.report',
+        braken="results/04_braken/{sample}.GTDB.centrifuge.k2report.T1.bracken.genus",
+        brakenReport="results/04_braken/{sample}.GTDB.centrifuge.k2report.T1.bracken.genus.report",
     log:
-        'logs/centrifuge/{sample}.centrifuge.bracken.genus.GTDB.log'
+        "logs/centrifuge/{sample}.centrifuge.bracken.genus.GTDB.log",
     conda:
-        'kraken2'
-    threads: 2 
+        "kraken2"
+    threads: 2
     shell:
-        'bracken '
-        '-d /bifo/scratch/2022-BJP-GTDB/2022-BJP-GTDB/kraken/GTDB '
-        '-i {input.centrifugeKraken2} '
-        '-o {output.braken} '
-        '-w {output.brakenReport} '
-        '-r 80 '
-        '-l G '
-        '-t 1 '
-        '&> {log} '
+        "bracken "
+        "-d /bifo/scratch/2022-BJP-GTDB/2022-BJP-GTDB/kraken/GTDB "
+        "-i {input.centrifugeKraken2} "
+        "-o {output.braken} "
+        "-w {output.brakenReport} "
+        "-r 80 "
+        "-l G "
+        "-t 1 "
+        "&> {log} "
 
 
 rule combineBrackenGenusReports:
     input:
-        expand('results/04_braken/{sample}.GTDB.centrifuge.k2report.T1.bracken.genus', sample=FID),
+        expand(
+            "results/04_braken/{sample}.GTDB.centrifuge.k2report.T1.bracken.genus",
+            sample=FID,
+        ),
     output:
-        'results/centrifuge.counts.bracken.T1.genus.txt'
+        "results/centrifuge.counts.bracken.T1.genus.txt",
     conda:
-        'kraken2'
+        "kraken2"
     threads: 2
     shell:
-        'combine_bracken_outputs.py -o {output} --files {input} '
+        "combine_bracken_outputs.py -o {output} --files {input} "
 
 
 rule brackenCentrifugeSpecies:
     input:
-        centrifugeKraken2='results/03_centrifuge/{sample}.GTDB.centrifuge.k2report',
+        centrifugeKraken2="results/03_centrifuge/{sample}.GTDB.centrifuge.k2report",
     output:
-        braken='results/04_braken/{sample}.GTDB.centrifuge.k2report.T1.bracken.species',
-        brakenReport='results/04_braken/{sample}.GTDB.centrifuge.k2report.T1.bracken.species.report',
+        braken="results/04_braken/{sample}.GTDB.centrifuge.k2report.T1.bracken.species",
+        brakenReport="results/04_braken/{sample}.GTDB.centrifuge.k2report.T1.bracken.species.report",
     log:
-        'logs/centrifuge/{sample}.centrifuge.bracken.species.GTDB.log'
+        "logs/centrifuge/{sample}.centrifuge.bracken.species.GTDB.log",
     conda:
-        'kraken2'
-    threads: 2 
+        "kraken2"
+    threads: 2
     shell:
-        'bracken '
-        '-d /bifo/scratch/2022-BJP-GTDB/2022-BJP-GTDB/kraken/GTDB '
-        '-i {input.centrifugeKraken2} '
-        '-o {output.braken} '
-        '-w {output.brakenReport} '
-        '-r 80 '
-        '-l S '
-        '-t 1 '
-        '&> {log} '
+        "bracken "
+        "-d /bifo/scratch/2022-BJP-GTDB/2022-BJP-GTDB/kraken/GTDB "
+        "-i {input.centrifugeKraken2} "
+        "-o {output.braken} "
+        "-w {output.brakenReport} "
+        "-r 80 "
+        "-l S "
+        "-t 1 "
+        "&> {log} "
 
 
 rule combineBrackenSpeciesReports:
     input:
-        expand('results/04_braken/{sample}.GTDB.centrifuge.k2report.T1.bracken.species', sample=FID),
+        expand(
+            "results/04_braken/{sample}.GTDB.centrifuge.k2report.T1.bracken.species",
+            sample=FID,
+        ),
     output:
-        'results/centrifuge.counts.bracken.T1.species.txt'
+        "results/centrifuge.counts.bracken.T1.species.txt",
     conda:
-        'kraken2'
+        "kraken2"
     threads: 2
     shell:
-        'combine_bracken_outputs.py -o {output} --files {input} '
+        "combine_bracken_outputs.py -o {output} --files {input} "
 
 
 # Kraken2 Rules
 
 
 rule kraken2GTDB:
-    # taxonomic profiling 
+    # taxonomic profiling
     input:
-        KDRs = 'results/02_kneaddata/{sample}.fastq'
-    output: 
-        k2OutputGTDB = 'results/kraken2GTDB/{sample}.GTDB.kraken2',
-        k2ReportGTDB = 'results/kraken2GTDB/{sample}.GTDB.k2report'
+        KDRs="results/02_kneaddata/{sample}.fastq",
+    output:
+        k2OutputGTDB="results/kraken2GTDB/{sample}.GTDB.kraken2",
+        k2ReportGTDB="results/kraken2GTDB/{sample}.GTDB.k2report",
     log:
-        'logs/kraken2GTDB/{sample}.kraken2.GTDB.log'
+        "logs/kraken2GTDB/{sample}.kraken2.GTDB.log",
     conda:
-        'kraken2'
+        "kraken2"
     threads: 20
-    resources: 
+    resources:
         # dynamic memory allocation: start with 400G and increment by 20G with every failed attempt 
         mem_gb=lambda wildcards, attempt: 400 + ((attempt - 1) * 20),
     shell:
-        'kraken2 '
-        '--use-names '
-        '--db /dataset/2022-BJP-GTDB/scratch/2022-BJP-GTDB/kraken/GTDB '
-        '-t {threads} '
-        '--report {output.k2ReportGTDB} '
-        '--report-minimizer-data '
-        '{input.KDRs} > {output.k2OutputGTDB}'
+        "kraken2 "
+        "--use-names "
+        "--db /dataset/2022-BJP-GTDB/scratch/2022-BJP-GTDB/kraken/GTDB "
+        "-t {threads} "
+        "--report {output.k2ReportGTDB} "
+        "--report-minimizer-data "
+        "{input.KDRs} > {output.k2OutputGTDB}"
 
 
 rule brackenGenus:
-    # compute abundance 
+    # compute abundance
     input:
-        k2ReportGTDB = 'results/kraken2GTDB/{sample}.GTDB.k2report'
+        k2ReportGTDB="results/kraken2GTDB/{sample}.GTDB.k2report",
     output:
-        bOutput = 'results/brackenGenus/{sample}.bracken',
-        bReport = 'results/brackenGenus/{sample}.breport'
+        bOutput="results/brackenGenus/{sample}.bracken",
+        bReport="results/brackenGenus/{sample}.breport",
     log:
-        'logs/brackenGenus/{sample}.bracken.log'
+        "logs/brackenGenus/{sample}.bracken.log",
     conda:
-        'envs/bracken.yaml'
+        "envs/bracken.yaml"
     threads: 2
-    shell: 
-        'kraken2 '
-        '-d /dataset/2022-BJP-GTDB/scratch/2022-BJP-GTDB/kraken/GTDB '
-        '-i {input.k2ReportGTDB} '
-        '-o {output.bOutput} '
-        '-w {output.bReport} '
-        '-r 80 '
-        '-l G '
-        '-t 10 ' 
-        '&> {log} '
-
-
-rule brackenMergeGenus: 
-    # merge all bracken outputs 
-    input: 
-        expand('results/brackenGenus/{sample}.bracken', sample = FID),
-    output:
-        'results/kraken2.bracken.genus.report.txt'
-    conda: 
-        'kraken2'
     shell:
-        'combine_bracken_outputs.py '
-        '--files {input} '
-        '-o {output}'
+        "kraken2 "
+        "-d /dataset/2022-BJP-GTDB/scratch/2022-BJP-GTDB/kraken/GTDB "
+        "-i {input.k2ReportGTDB} "
+        "-o {output.bOutput} "
+        "-w {output.bReport} "
+        "-r 80 "
+        "-l G "
+        "-t 10 "
+        "&> {log} "
+
+
+rule brackenMergeGenus:
+    # merge all bracken outputs
+    input:
+        expand("results/brackenGenus/{sample}.bracken", sample=FID),
+    output:
+        "results/kraken2.bracken.genus.report.txt",
+    conda:
+        "kraken2"
+    shell:
+        "combine_bracken_outputs.py "
+        "--files {input} "
+        "-o {output}"
 
 
 rule humann3Uniref50EC:
     input:
-        kneaddataReads='results/02_kneaddata/{sample}.fastq'
+        kneaddataReads="results/02_kneaddata/{sample}.fastq",
     output:
-        genes = 'results/03_humann3Uniref50EC/{sample}_genefamilies.tsv',
-        pathways = 'results/03_humann3Uniref50EC/{sample}_pathabundance.tsv',
-        pathwaysCoverage = 'results/03_humann3Uniref50EC/{sample}_pathcoverage.tsv'
+        genes="results/03_humann3Uniref50EC/{sample}_genefamilies.tsv",
+        pathways="results/03_humann3Uniref50EC/{sample}_pathabundance.tsv",
+        pathwaysCoverage="results/03_humann3Uniref50EC/{sample}_pathcoverage.tsv",
     log:
-        'logs/humann3/{sample}.human3.uniref50EC.log'
+        "logs/humann3/{sample}.human3.uniref50EC.log",
     conda:
-        'biobakery'
+        "biobakery"
     threads: 16
     resources:
-        mem_gb= lambda wildcards, attempt: 24 + ((attempt - 1) + 12) 
+        mem_gb=lambda wildcards, attempt: 24 + ((attempt - 1) + 12),
     message:
-        'humann3 profiling with uniref50EC: {wildcards.samples}\n'
+        "humann3 profiling with uniref50EC: {wildcards.samples}\n"
     shell:
-        'humann3 '
-        '--memory-use minimum '
-        '--threads {threads} '
-        '--bypass-nucleotide-search '
-        '--search-mode uniref50 '
-        '--protein-database /bifo/scratch/2022-BJP-GTDB/biobakery/humann3/unirefECFilt '
-        '--input-format fastq '
-        '--output results/03_humann3Uniref50EC '
-        '--input {input.kneaddataReads} '
-        '--output-basename {wildcards.samples} '
-        '--o-log {log} '
-        '--remove-temp-output '
+        "humann3 "
+        "--memory-use minimum "
+        "--threads {threads} "
+        "--bypass-nucleotide-search "
+        "--search-mode uniref50 "
+        "--protein-database /bifo/scratch/2022-BJP-GTDB/biobakery/humann3/unirefECFilt "
+        "--input-format fastq "
+        "--output results/03_humann3Uniref50EC "
+        "--input {input.kneaddataReads} "
+        "--output-basename {wildcards.samples} "
+        "--o-log {log} "
+        "--remove-temp-output "
