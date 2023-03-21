@@ -224,7 +224,7 @@ rule brackenGenus:
     log:
         "logs/brackenGenus/{sample}.bracken.log",
     conda:
-        "envs/bracken.yaml"
+        "kraken2"
     threads: 2
     shell:
         "kraken2 "
