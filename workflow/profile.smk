@@ -31,7 +31,7 @@ rule all:
         "results/centrifuge.counts.all.txt",
         "results/centrifuge.counts.bracken.T1.genus.txt",
         "results/centrifuge.counts.bracken.T1.species.txt",
-        # 'results/kraken2.bracken.genus.report.txt',
+        'results/kraken2.bracken.genus.report.txt',
         # expand("results/03_humann3Uniref50EC/{sample}_pathcoverage.tsv", sample=FID),
 
 
