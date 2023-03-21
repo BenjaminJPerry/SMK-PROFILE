@@ -227,7 +227,7 @@ rule brackenGenus:
         "kraken2"
     threads: 2
     shell:
-        "kraken2 "
+        "bracken "
         "-d /dataset/2022-BJP-GTDB/scratch/2022-BJP-GTDB/kraken/GTDB "
         "-i {input.k2ReportGTDB} "
         "-o {output.bOutput} "
