@@ -11,7 +11,7 @@
 import os
 
 
-(FID,) = glob_wildcards("'results/02_kneaddata/{sample}.fastq'")
+(FID,) = glob_wildcards("results/02_kneaddata/{sample}.fastq")
 
 
 onstart:
@@ -32,7 +32,7 @@ rule all:
         "results/centrifuge.counts.bracken.T1.genus.txt",
         "results/centrifuge.counts.bracken.T1.species.txt",
         # 'results/kraken2.bracken.genus.report.txt',
-        expand("results/03_humann3Uniref50EC/{sample}_pathcoverage.tsv", sample=FID),
+        # expand("results/03_humann3Uniref50EC/{sample}_pathcoverage.tsv", sample=FID),
 
 
 # Centrifuge rules
@@ -55,9 +55,7 @@ rule centrifugeGTDB:
         sampleSheet="resources/centrifugeSampleSheet.tsv",
     output:
         out=expand("results/03_centrifuge/{sample}.GTDB.centrifuge", sample=FID),
-        report=expand(
-            "results/03_centrifuge/{sample}.GTDB.centrifuge.report", sample=FID
-        ),
+        report=expand("results/03_centrifuge/{sample}.GTDB.centrifuge.report", sample=FID),
     log:
         "logs/centrifuge.GTDB.multi.log",
     conda:
@@ -143,10 +141,7 @@ rule brackenCentrifugeGenus:
 
 rule combineBrackenGenusReports:
     input:
-        expand(
-            "results/04_braken/{sample}.GTDB.centrifuge.k2report.T1.bracken.genus",
-            sample=FID,
-        ),
+        expand("results/04_braken/{sample}.GTDB.centrifuge.k2report.T1.bracken.genus", sample=FID),
     output:
         "results/centrifuge.counts.bracken.T1.genus.txt",
     conda:
@@ -181,10 +176,7 @@ rule brackenCentrifugeSpecies:
 
 rule combineBrackenSpeciesReports:
     input:
-        expand(
-            "results/04_braken/{sample}.GTDB.centrifuge.k2report.T1.bracken.species",
-            sample=FID,
-        ),
+        expand("results/04_braken/{sample}.GTDB.centrifuge.k2report.T1.bracken.species", sample=FID),
     output:
         "results/centrifuge.counts.bracken.T1.species.txt",
     conda:
