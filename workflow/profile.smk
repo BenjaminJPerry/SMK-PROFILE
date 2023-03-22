@@ -94,23 +94,12 @@ rule combineCentrifugeReports:
     input:
         expand("results/03_centrifuge/{sample}.GTDB.centrifuge.k2report", sample=FID),
     output:
-        "results/03_centrifuge/rough.counts.all.txt",
+        "results/centrifuge.counts.all.txt",
     conda:
         "kraken2"
     threads: 2
     shell:
         "combine_kreports.py -o {output} -r {input} "
-
-
-rule formatCombinedCentrifugeReport:
-    input:
-        "results/03_centrifuge/rough.counts.all.txt",
-    output:
-        "results/centrifuge.counts.all.txt",
-    threads: 2
-    shell:
-        "workflow/scripts/reformat_centrifuge_count_matrix.sh -i {input} -p results/03_centrifuge && "
-        "mv results/03_centrifuge/clean.count.matrix.txt {output} "
 
 
 # Centrifuge Bracken Rules
