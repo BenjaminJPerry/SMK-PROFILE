@@ -115,7 +115,7 @@ rule taxpastaCentrifugeTable:
 
 rule taxpastaCentrifugeBiom:
     input:
-        expand("results/03_centrifuge/{sample}.GTDB.centrifuge.k2report", sample = FIDs),
+        expand("results/03_centrifuge/{sample}.centrifuge", sample = FIDs),
     output:
         "results/centrifuge.counts.biom",
     conda:
