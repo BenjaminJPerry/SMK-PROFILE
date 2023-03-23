@@ -35,7 +35,7 @@ rule all:
         "results/kraken2.counts.biom",
 
         "results/bracken.k2.counts.tsv",
-        "results/bracken.k2.biom",
+        "results/bracken.k2.counts.biom",
 
         # expand("results/03_humann3Uniref50EC/{sample}_pathcoverage.tsv", sample=FIDs),
 
@@ -161,7 +161,7 @@ rule taxpastaKraken2:
     input:
         expand("results/03_kraken2GTDB/{sample}.kraken2", sample = FIDs),
     output:
-        "results/kraken2.counts.txt",
+        "results/kraken2.counts.tsv",
     conda:
         "kraken2"
     shell:
@@ -222,7 +222,7 @@ rule taxpastaKraken2Bracken:
     input:
         expand("results/03_brackenGenus/{sample}.bracken", sample = FIDs),
     output:
-        "results/bracken.k2.counts.txt",
+        "results/bracken.k2.counts.tsv",
     conda:
         "kraken2"
     shell:
