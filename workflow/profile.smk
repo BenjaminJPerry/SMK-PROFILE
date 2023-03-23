@@ -197,7 +197,7 @@ rule taxpastaKraken2Biom:
 
 rule brackenGenus:
     input:
-        k2ReportGTDB = "results/kraken2GTDB/{sample}.kraken2",
+        k2ReportGTDB = "results/03_kraken2GTDB/{sample}.kraken2",
     output:
         bOutput = "results/03_brackenGenus/{sample}.bracken",
         bReport = "results/03_brackenGenus/{sample}.br",
