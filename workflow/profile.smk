@@ -214,13 +214,13 @@ rule brackenGenus:
         "-w {output.bReport} "
         "-r 80 "
         "-l G "
-        "-t 1 " # Defaults
+        "-t 5 "
         "&> {log} "
 
 
 rule taxpastaKraken2Bracken:
     input:
-        expand("results/03_brackenGenus/{sample}.br", sample = FIDs),
+        expand("results/03_brackenGenus/{sample}.bracken", sample = FIDs),
     output:
         "results/bracken.k2.counts.tsv",
     conda:
@@ -240,7 +240,7 @@ rule taxpastaKraken2Bracken:
 
 rule taxpastaKraken2BrackenBiom:
     input:
-        expand("results/03_brackenGenus/{sample}.br", sample = FIDs),
+        expand("results/03_brackenGenus/{sample}.bracken", sample = FIDs),
     output:
         "results/bracken.k2.counts.biom",
     conda:
