@@ -81,7 +81,7 @@ rule centrifugeKrakenReport:
     output:
         centrifugeKraken2 = "results/03_centrifuge/{sample}.centrifuge",
     log:
-        "logs/centirifuge){sample}.centrifuge.to.kraken2.log",
+        "logs/centrifugeKrakenReport/{sample}.centrifuge.to.kraken2.log",
     conda:
         "centrifuge"
     threads: 2
