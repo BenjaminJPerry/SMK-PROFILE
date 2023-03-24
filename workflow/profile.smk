@@ -163,7 +163,7 @@ rule taxpastaKraken2:
     output:
         "results/kraken2.counts.tsv",
     conda:
-        "kraken2"
+        "taxpasta"
     shell:
         "taxpasta merge "
         "-p kraken2 "
@@ -183,7 +183,7 @@ rule taxpastaKraken2Biom:
     output:
         "results/kraken2.counts.biom",
     conda:
-        "kraken2"
+        "taxpasta"
     shell:
         "taxpasta merge "
         "-p kraken2 "
@@ -224,7 +224,7 @@ rule taxpastaKraken2Bracken:
     output:
         "results/bracken.k2.counts.tsv",
     conda:
-        "kraken2"
+        "taxpasta"
     shell:
         "taxpasta merge "
         "-p bracken "
@@ -244,7 +244,7 @@ rule taxpastaKraken2BrackenBiom:
     output:
         "results/bracken.k2.counts.biom",
     conda:
-        "kraken2"
+        "taxpasta"
     shell:
         "taxpasta merge "
         "-p bracken "
