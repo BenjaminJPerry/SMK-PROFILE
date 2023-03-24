@@ -214,7 +214,7 @@ rule brackenGenus:
         "-w {output.bReport} "
         "-r 80 "
         "-l G "
-        # "-t 10 " # Defaults
+        "-t 1 " # Defaults
         "&> {log} "
 
 
