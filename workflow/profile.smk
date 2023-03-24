@@ -220,7 +220,7 @@ rule brackenGenus:
 
 rule taxpastaKraken2Bracken:
     input:
-        expand("results/03_brackenGenus/{sample}.bracken", sample = FIDs),
+        expand("results/03_brackenGenus/{sample}.br", sample = FIDs),
     output:
         "results/bracken.k2.counts.tsv",
     conda:
@@ -240,7 +240,7 @@ rule taxpastaKraken2Bracken:
 
 rule taxpastaKraken2BrackenBiom:
     input:
-        expand("results/03_brackenGenus/{sample}.bracken", sample = FIDs),
+        expand("results/03_brackenGenus/{sample}.br", sample = FIDs),
     output:
         "results/bracken.k2.counts.biom",
     conda:
