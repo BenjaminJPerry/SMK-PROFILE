@@ -214,7 +214,7 @@ rule brackenGenus:
         "-w {output.bReport} "
         "-r 80 "
         "-l G "
-        "-t 10 "
+        "-t 10 " # Necessary to get floating point counts to sum to 1.0 in taxpasta
         "&> {log} "
 
 
