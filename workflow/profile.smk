@@ -1,6 +1,6 @@
-# 2022 Benjamin J Perry
+# 2023 Benjamin J Perry
 # MIT License
-# Copyright (c) 2022 Benjamin J Perry
+# Copyright (c) 2023 Benjamin J Perry
 # Version: 1.0
 # Maintainer: Benjamin J Perry
 # Email: ben.perry@agresearch.co.nz
@@ -64,7 +64,7 @@ rule centrifugeGTDB:
         "centrifuge"
     threads: 32
     resources:
-        mem_gb = lambda wildacards, attempt: 140 + ((attempt - 1) + 20),
+        mem_gb = lambda wildcards, attempt: 140 + ((attempt - 1) + 20),
         time = "06:00:00",
     shell:
         "centrifuge "
