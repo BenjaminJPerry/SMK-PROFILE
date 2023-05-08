@@ -1,0 +1,7 @@
+results
+resources
+logs
+downsampled
+.snakemake
+ref
+fastq/*gz

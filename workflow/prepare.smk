@@ -23,16 +23,12 @@ onstart:
     os.system('echo "  CONDA VERSION: $(conda --version)"')
 
 
-FIDs, = glob_wildcards("fastq/{sample}.fastq.gz")
+FIDs, = glob_wildcards("fastq/{sample}_L001_R1_001.fastq.gz")
 
 
 rule all:
     input:
-        expand('results/02_kneaddata/{sample}.fastq', sample=FIDs),
-
         'results/00_QC/ReadsMultiQCReport.html',
-        'results/00_QC/KDRReadsMultiQCReport.html',
-
         'results/00_QC/seqkit.report.KDTrim.txt',
         'results/00_QC/seqkit.report.KDTRF.txt',
         'results/00_QC/seqkit.report.KDOvine.txt',
@@ -42,10 +38,24 @@ rule all:
         'results/00_QC/seqkit.report.prinseq.txt',
         'results/00_QC/seqkit.report.KDR.txt',
 
+rule downsample:
+    input:
+        read1 = "fastq/{sample}_L001_R1_001.fastq.gz",
+        read2 = "fastq/{sample}_L001_R2_001.fastq.gz"
+    output:
+        "downsampled/{sample}.fastq.gz"
+    conda:
+        "seqtk"
+    threads: 2
+    shell:
+        "seqtk sample -s1953 {input.read1} 1000000 | gzip >> {output} "
+        "&& "
+        "seqtk sample -s1953 {input.read2} 1000000 | gzip >> {output} "
+
 
 rule fastqc:
     input:
-        fastq = 'fastq/{sample}.fastq.gz'
+        fastq = 'downsampled/{sample}.fastq.gz'
     output:
         html = 'results/00_QC/fastqc/{sample}_fastqc.html',
         zip = 'results/00_QC/fastqc/{sample}_fastqc.zip'
@@ -63,26 +73,9 @@ rule fastqc:
         '{input.fastq}'
 
 
-rule multiQC:
-    input:
-        fastqc = expand('results/00_QC/fastqc/{sample}_fastqc.zip', sample = FIDs)
-    output:
-        multiQC ='results/00_QC/ReadsMultiQCReport.html'
-    conda:
-        'multiqc'
-        # 'docker://quay.io/biocontainers/multiqc:1.12--pyhdfd78af_0'
-    shell:
-        'multiqc '
-        '-n results/00_QC/ReadsMultiQCReport '
-        '-s '
-        '-f '
-        '--interactive '
-        '{input.fastqc} '
-
-
 rule bbduk:
     input:
-        reads = 'fastq/{sample}.fastq.gz',
+        reads = 'downsampled/{sample}.fastq.gz',
     output:
         bbdukReads = 'results/01_readMasking/{sample}.bbduk.fastq.gz'
     log:
@@ -97,7 +90,7 @@ rule bbduk:
         'entropy=0.3 '
         'entropywindow=50 '
         'trimpolygright=5 '
-        'qtrim=rl '
+        'qtrim=r '
         'trimq=20 '
         'out={output.bbdukReads} '
         '2>&1 | tee {log}'
@@ -123,7 +116,7 @@ rule prinseq:
         '-lc_entropy=0.5 '
         '-lc_dust=0.5 '
         '-out_gz '
-        '2>&1 | tee {log}  && '
+        '2>&1 | tee {log} && '
         'mv results/01_readMasking/{wildcards.sample}_good_out.fastq.gz {output.maskedReads} '
 
 
@@ -133,7 +126,7 @@ rule kneaddata:
     output:
         trimReads = temp('results/02_kneaddata/{sample}.trimmed.fastq'),
         trfReads = temp('results/02_kneaddata/{sample}.repeats.removed.fastq'),
-        ovineReads = temp('results/02_kneaddata/{sample}_GCF_016772045.1-ARS-UI-Ramb-v2.0_bowtie2_contam.fastq'),
+        ovineReads = temp('results/02_kneaddata/{sample}_ARS_UCD1.3_bowtie2_contam.fastq'),
         silvaReads = temp('results/02_kneaddata/{sample}_SLIVA138.1_bowtie2_contam.fastq'),
         KDRs ='results/02_kneaddata/{sample}.fastq',
     conda:
@@ -153,12 +146,13 @@ rule kneaddata:
         '--output-prefix {wildcards.sample} '
         '-t {threads} '
         '--log-level DEBUG '
-        '--log {log} '
+        #'--log {log} '
         '--trimmomatic /home/perrybe/conda-envs/biobakery/share/trimmomatic '
         '--sequencer-source TruSeq3 '
-        '-db /bifo/scratch/2022-BJP-GTDB/2022-BJP-GTDB/Rambv2/GCF_016772045.1-ARS-UI-Ramb-v2.0 '
+        '-db /home/perrybe/quickQC/cow_rumens/SMK-PROFILE/ref/ARS_UCD1.3 '
         '-db /bifo/scratch/2022-BJP-GTDB/2022-BJP-GTDB/SILVA_138.1/SLIVA138.1 ' # Embarrassing typo when building index XD
         '-o results/02_kneaddata '
+        '2>&1 | tee {log} '
 
 
 rule fastqcKDRs:
@@ -178,23 +172,6 @@ rule fastqcKDRs:
         '-q '
         '-t {threads} '
         '{input.fastq}'
-
-
-rule multiQCKDRs:
-    input:
-        fastqc = expand('results/00_QC/fastqcKDR/{sample}_fastqc.zip', sample = FIDs)
-    output:
-        'results/00_QC/KDRReadsMultiQCReport.html'
-    conda:
-        'multiqc'
-        # 'docker://quay.io/biocontainers/multiqc:1.12--pyhdfd78af_0'
-    shell:
-        'multiqc '
-        '-n results/00_QC/KDRReadsMultiQCReport '
-        '-s '
-        '-f '
-        '--interactive '
-        '{input.fastqc}'
 
 
 rule seqkitKneaddataTrimReads: #TODO expand these
@@ -223,7 +200,7 @@ rule seqkitKneaddataTRFReads:
 
 rule seqkitKneaddataOvineReads:
     input:
-        ovineReads = expand('results/02_kneaddata/{sample}_GCF_016772045.1-ARS-UI-Ramb-v2.0_bowtie2_contam.fastq', sample = FIDs),
+        ovineReads = expand('results/02_kneaddata/{sample}_ARS_UCD1.3_bowtie2_contam.fastq', sample = FIDs),
     output:
         'results/00_QC/seqkit.report.KDOvine.txt'
     conda:
