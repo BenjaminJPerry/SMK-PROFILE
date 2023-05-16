@@ -1,1 +1,9 @@
 # pipeline config file
+
+REFERENCE:
+  HOST: '/home/perrybe/quickQC/cow_rumens/SMK-PROFILE/ref/ARS_UCD1.3'
+  SILVA: '/bifo/scratch/2022-BJP-GTDB/2022-BJP-GTDB/SILVA_138.1/SLIVA138.1'
+  KRAKEN: '/dataset/2022-BJP-GTDB/scratch/2022-BJP-GTDB/kraken/GTDB'
+  KRAKEN_TAXONOMY: '/dataset/2022-BJP-GTDB/scratch/2022-BJP-GTDB/kraken/GTDB/taxonomy'
+  CENTRIFUGE: '/bifo/scratch/2022-BJP-GTDB/2022-BJP-GTDB/centrifuge/GTDB'
+  CENTRIFUGE_TAXONOMY: '/dataset/2022-BJP-GTDB/scratch/2022-BJP-GTDB/centrifuge'

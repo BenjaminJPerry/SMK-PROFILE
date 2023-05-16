@@ -198,9 +198,9 @@ rule seqkitKneaddataTRFReads:
         'seqkit stats -j {threads} -a {input.trfReads} > {output} '
 
 
-rule seqkitKneaddataOvineReads:
+rule seqkitKneaddataHostReads:
     input:
-        ovineReads = expand('results/02_kneaddata/{sample}_ARS_UCD1.3_bowtie2_contam.fastq', sample = FIDs),
+        HostReads = expand('results/02_kneaddata/{sample}_ARS_UCD1.3_bowtie2_contam.fastq', sample = FIDs),
     output:
         'results/00_QC/seqkit.report.KDOvine.txt'
     conda:
