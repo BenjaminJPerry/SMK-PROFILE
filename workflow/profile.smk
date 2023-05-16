@@ -72,7 +72,7 @@ rule centrifugeGTDB:
         "--sample-sheet {input.sampleSheet} "
         "-t "
         "--threads {threads} "
-        "&> {log} "
+        "2>&1 | tee {log}"
 
 
 rule centrifugeKrakenReport:
@@ -150,11 +150,14 @@ rule kraken2GTDB:
     shell:
         "kraken2 "
         "--use-names "
+        "--quick "
         "--db /dataset/2022-BJP-GTDB/scratch/2022-BJP-GTDB/kraken/GTDB "
         "-t {threads} "
         "--report {output.k2ReportGTDB} "
         "--report-minimizer-data "
-        "{input.KDRs} > {output.k2OutputGTDB}"
+        "{input.KDRs} "
+        "--output {output.k2OutputGTDB} "
+        "2>&1 | tee {log} "
 
 
 rule taxpastaKraken2:
@@ -195,14 +198,14 @@ rule taxpastaKraken2Biom:
         "{input} "
 
 
-rule brackenGenus:
+rule brackenSpecies:
     input:
         k2ReportGTDB = "results/03_kraken2GTDB/{sample}.kraken2",
     output:
-        bOutput = "results/03_brackenGenus/{sample}.bracken",
-        bReport = "results/03_brackenGenus/{sample}.br",
+        bOutput = "results/03_brackenSpecies/{sample}.bracken",
+        bReport = "results/03_brackenSpecies/{sample}.br",
     log:
-        "logs/brackenGenus/{sample}.bracken.log",
+        "logs/brackenSpecies/{sample}.bracken.log",
     conda:
         "kraken2"
     threads: 2
@@ -213,14 +216,14 @@ rule brackenGenus:
         "-o {output.bOutput} "
         "-w {output.bReport} "
         "-r 80 "
-        "-l G "
+        "-l S "
         "-t 10 " # Necessary to get floating point counts to sum to 1.0 in taxpasta
         "&> {log} "
 
 
 rule taxpastaKraken2Bracken:
     input:
-        expand("results/03_brackenGenus/{sample}.bracken", sample = FIDs),
+        expand("results/03_brackenSpecies/{sample}.bracken", sample = FIDs),
     output:
         "results/bracken.k2.counts.tsv",
     conda:
@@ -234,13 +237,13 @@ rule taxpastaKraken2Bracken:
         "--add-name "
         "--add-rank "
         "--add-lineage "
-        "--summarise-at genus "
+        "--summarise-at species "
         "{input} "
 
 
 rule taxpastaKraken2BrackenBiom:
     input:
-        expand("results/03_brackenGenus/{sample}.bracken", sample = FIDs),
+        expand("results/03_brackenSpecies/{sample}.bracken", sample = FIDs),
     output:
         "results/bracken.k2.counts.biom",
     conda:
@@ -252,7 +255,7 @@ rule taxpastaKraken2BrackenBiom:
         "--output-format BIOM "
         "--taxonomy /dataset/2022-BJP-GTDB/scratch/2022-BJP-GTDB/kraken/GTDB/taxonomy "
         "--add-name "
-        "--summarise-at genus "
+        "--summarise-at species "
         "{input} "
 
 
@@ -274,7 +277,7 @@ rule humann3Uniref50EC:
         "humann3 profiling with uniref50EC: {wildcards.samples}\n"
     shell:
         "humann3 "
-        "--memory-use minimum "
+        "--memory-use maximum "
         "--threads {threads} "
         "--bypass-nucleotide-search "
         "--search-mode uniref50 "
@@ -283,5 +286,6 @@ rule humann3Uniref50EC:
         "--output results/03_humann3Uniref50EC "
         "--input {input.kneaddataReads} "
         "--output-basename {wildcards.samples} "
-        "--o-log {log} "
+        #"--o-log {log} "
         "--remove-temp-output "
+        " 2>&1 | tee {log}"
