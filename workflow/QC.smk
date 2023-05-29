@@ -30,7 +30,45 @@ rule all:
     input:
         'results/00_QC/MultiQCReport.html',
 
+rule fastqc:
+    input:
+        fastq = 'downsampled/{sample}.fastq.gz'
+    output:
+        html = 'results/00_QC/fastqc/{sample}_fastqc.html',
+        zip = 'results/00_QC/fastqc/{sample}_fastqc.zip'
+    conda:
+        'fastqc'
+        # 'docker://biocontainers/fastqc:v0.11.9_cv8'
+    threads: 2
+    message:
+        'Running QC on reads: {wildcards.sample}\n'
+    shell:
+        'fastqc '
+        '-o results/00_QC/fastqc/ '
+        '-q '
+        '-t {threads} '
+        '{input.fastq}'
 
+
+rule fastqcKDRs:
+    input:
+        fastq = 'results/02_kneaddata/{sample}.fastq'
+    output:
+        'results/00_QC/fastqcKDR/{sample}_fastqc.zip'
+    conda:
+        'fastqc'
+        # 'docker://biocontainers/fastqc:v0.11.9_cv8'
+    threads: 2
+    message:
+        'Running QC on reads: {wildcards.sample}\n'
+    shell:
+        'fastqc '
+        '-o results/00_QC/fastqcKDR/ '
+        '-q '
+        '-t {threads} '
+        '{input.fastq}'
+
+ 
 rule multiQC:
     input:
         fastqc = expand('results/00_QC/fastqc/{sample}_fastqc.zip', sample = FIDs),
