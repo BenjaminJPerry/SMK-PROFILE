@@ -13,7 +13,7 @@ cluster:
 default-resources:
   - account=agresearch03868
   - partition=large,milan
-  - time="02:00:00"
+  - time=120
   - mem_gb=8
 restart-times: 5
 local-cores: 6
@@ -28,3 +28,5 @@ use-singularity: True
 reason: True
 conda-frontend: conda
 rerun-trigger: mtime
+cluster-status: workflow/scripts/status.py
+

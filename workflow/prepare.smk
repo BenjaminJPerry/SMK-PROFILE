@@ -57,9 +57,9 @@ rule sana:
         "benchmarks/sana.{samples}.log"
     threads: 8
     resources:
-        time = "00:60:00",
+        mem_gb = lambda wildcards, attempt: 4 + ((attempt - 1) + 4),
+        time = lambda wildcards, attempt: 60 + ((attempt - 1) + 30),
         partition = "large,milan",
-        mem_gb = 4,
     shell:
         "seqkit sana -j {threads} {input.read1} {input.read2} {input.read3} {input.read4} > {output} 2> {log} "
 
@@ -76,11 +76,11 @@ checkpoint seqkitRaw:
     conda:
         #'env/seqkit.yaml'
         'seqkit'
+    threads: 32
     resources:
-        mem_gb=2,
-        time="00:60:00",
+        mem_gb = lambda wildcards, attempt: 4 + ((attempt - 1) + 4),
+        time = lambda wildcards, attempt: 90 + ((attempt - 1) + 60),
         partition="large,milan"
-    threads: 12
     shell:
         'seqkit stats -j {threads} -a {input} > {output} '
 
@@ -102,8 +102,8 @@ rule bbduk:
         'bbduk'
     threads:8
     resources:
-        mem_gb=4,
-        time="00:30:00",
+        mem_gb = lambda wildcards, attempt: 4 + ((attempt - 1) + 4),
+        time = lambda wildcards, attempt: 30 + ((attempt - 1) + 30),
         partition='large,milan',
     shell:
         'bbduk.sh '
@@ -133,11 +133,11 @@ rule prinseq:
     conda:
         #'env/prinseqPP.yaml'
         'prinseqpp'
-    resources:
-        mem_gb=4,
-        time="00:60:00",
-        partition='large,milan',
     threads:8
+    resources:
+        mem_gb = lambda wildcards, attempt: 4 + ((attempt - 1) + 4),
+        time = lambda wildcards, attempt: 60 + ((attempt - 1) + 30),
+        partition='large,milan',
     shell:
         'prinseq++ '
         '-threads {threads} '
@@ -171,11 +171,11 @@ checkpoint seqkitMaskingPrinseqReads:
     conda:
         #'env/seqkit.yaml'
         'seqkit'
-    resources:
-        mem_gb=4,
-        time="00:90:00",
-        partition="large,milan"
     threads: 32
+    resources:
+        mem_gb = lambda wildcards, attempt: 4 + ((attempt - 1) + 4),
+        time = lambda wildcards, attempt: 90 + ((attempt - 1) + 30),
+        partition='large,milan',
     shell:
         'seqkit stats -j {threads} -a {input.prinseqReads} > {output} '
 
@@ -201,10 +201,10 @@ rule kneaddata:
         'logs/kneaddata/{samples}.kneaddata.log'
 #    benchmark:
 #        'benchmarks/kneaddata.{samples}.txt'
-    threads: 12
+    threads: 16
     resources:
-        mem_gb=32,
-        time="00:60:00",
+        mem_gb = lambda wildcards, attempt: 32 + ((attempt - 1) + 8),
+        time = lambda wildcards, attempt: 90 + ((attempt - 1) + 30),
         partition='large,milan',
     message:
         'kneaddata: {wildcards.samples}\n'
@@ -247,11 +247,11 @@ rule seqkitKneaddataTrimReads:
     conda:
         #'env/seqkit.yaml'
         'seqkit'
-    resources:
-        mem_gb=4,
-        time="00:90:00",
-        partition="large,milan"
     threads: 32
+    resources:
+        mem_gb = lambda wildcards, attempt: 4 + ((attempt - 1) + 4),
+        time = lambda wildcards, attempt: 90 + ((attempt - 1) + 30),
+        partition='large,milan',
     shell:
         'seqkit stats -j {threads} -a {input.trimReads} > {output} '
 
@@ -277,11 +277,11 @@ rule seqkitKneaddataTRFReads:
     conda:
         #'env/seqkit.yaml'
         'seqkit'
-    resources:
-        mem_gb=4,
-        time="00:90:00",
-        partition="large,milan"
     threads: 32
+    resources:
+        mem_gb = lambda wildcards, attempt: 4 + ((attempt - 1) + 4),
+        time = lambda wildcards, attempt: 90 + ((attempt - 1) + 30),
+        partition='large,milan',
     shell:
         'seqkit stats -j {threads} -a {input.trfReads} > {output} '
 
@@ -307,11 +307,11 @@ rule seqkitKneaddataOvisReads:
     conda:
         #'env/seqkit.yaml'
         'seqkit'
-    resources:
-        mem_gb=4,
-        time="00:90:00",
-        partition="large,milan"
     threads: 32
+    resources:
+        mem_gb = lambda wildcards, attempt: 4 + ((attempt - 1) + 4),
+        time = lambda wildcards, attempt: 90 + ((attempt - 1) + 30),
+        partition='large,milan',
     shell:
         'seqkit stats -j {threads} -a {input.HostReads} > {output} '
 
@@ -336,11 +336,11 @@ rule seqkitKneaddataBosReads:
     conda:
         #'env/seqkit.yaml'
         'seqkit'
-    resources:
-        mem_gb=4,
-        time="00:90:00",
-        partition="large,milan"
     threads: 32
+    resources:
+        mem_gb = lambda wildcards, attempt: 4 + ((attempt - 1) + 4),
+        time = lambda wildcards, attempt: 90 + ((attempt - 1) + 30),
+        partition='large,milan',
     shell:
         'seqkit stats -j {threads} -a {input.HostReads} > {output} '
 
@@ -366,11 +366,11 @@ rule seqkitKneaddataCapraReads:
     conda:
         #'env/seqkit.yaml'
         'seqkit'
-    resources:
-        mem_gb=4,
-        time="00:90:00",
-        partition="large,milan"
     threads: 32
+    resources:
+        mem_gb = lambda wildcards, attempt: 4 + ((attempt - 1) + 4),
+        time = lambda wildcards, attempt: 90 + ((attempt - 1) + 30),
+        partition='large,milan',
     shell:
         'seqkit stats -j {threads} -a {input.HostReads} > {output} '
 
@@ -395,11 +395,11 @@ rule seqkitKneaddataCervusReads:
     conda:
         #'env/seqkit.yaml'
         'seqkit'
-    resources:
-        mem_gb=4,
-        time="00:90:00",
-        partition="large,milan"
     threads: 32
+    resources:
+        mem_gb = lambda wildcards, attempt: 4 + ((attempt - 1) + 4),
+        time = lambda wildcards, attempt: 90 + ((attempt - 1) + 30),
+        partition='large,milan',
     shell:
         'seqkit stats -j {threads} -a {input.HostReads} > {output} '
 
@@ -425,11 +425,11 @@ rule seqkitKneaddataSILVAReads:
     conda:
         #'env/seqkit.yaml'
         'seqkit'
-    resources:
-        mem_gb=4,
-        time="00:90:00",
-        partition="large,milan"
     threads: 32
+    resources:
+        mem_gb = lambda wildcards, attempt: 4 + ((attempt - 1) + 4),
+        time = lambda wildcards, attempt: 90 + ((attempt - 1) + 30),
+        partition='large,milan',
     shell:
         'seqkit stats -j {threads} -a {input.silvaReads} > {output} '
 
@@ -455,11 +455,11 @@ rule seqkitMaskingBBDukReads:
     conda:
         #'env/seqkit.yaml'
         'seqkit'
-    resources:
-        mem_gb=4,
-        time="00:90:00",
-        partition="large,milan"
     threads: 32
+    resources:
+        mem_gb = lambda wildcards, attempt: 4 + ((attempt - 1) + 4),
+        time = lambda wildcards, attempt: 90 + ((attempt - 1) + 30),
+        partition='large,milan',
     shell:
         'seqkit stats -j {threads} -a {input.bbdukReads} > {output} '
 
@@ -485,10 +485,10 @@ rule seqkitKneaddata:
     conda:
         #'env/seqkit.yaml'
         'seqkit'
-    resources:
-        mem_gb=4,
-        time="00:90:00",
-        partition="large,milan"
     threads: 32
+    resources:
+        mem_gb = lambda wildcards, attempt: 4 + ((attempt - 1) + 4),
+        time = lambda wildcards, attempt: 90 + ((attempt - 1) + 30),
+        partition='large,milan',
     shell:
         'seqkit stats -j {threads} -a {input.KDRs} > {output} '
