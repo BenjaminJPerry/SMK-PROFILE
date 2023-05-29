@@ -23,7 +23,7 @@ onstart:
     os.system('echo "  CONDA VERSION: $(conda --version)"')
 
 
-FIDs, = glob_wildcards("fastq/{samples}_L003_R1_001.fastq.gz")
+FIDs, = glob_wildcards("fastq/{samples}_L001_R1_001.fastq.gz")
 
 
 rule all:
@@ -43,10 +43,10 @@ rule all:
 
 rule sana:
     input:
-        read1 = "fastq/{samples}_L003_R1_001.fastq.gz",
-        read2 = "fastq/{samples}_L003_R2_001.fastq.gz",
-        read3 = "fastq/{samples}_L004_R1_001.fastq.gz",
-        read4 = "fastq/{samples}_L004_R1_001.fastq.gz",
+        read1 = "fastq/{samples}_L001_R1_001.fastq.gz",
+        read2 = "fastq/{samples}_L001_R2_001.fastq.gz",
+        read3 = "fastq/{samples}_L002_R1_001.fastq.gz",
+        read4 = "fastq/{samples}_L002_R2_001.fastq.gz",
     output:
         temp("results/01_readMasking/{samples}.sana.fastq.gz"),
     log:
