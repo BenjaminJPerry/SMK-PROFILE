@@ -23,7 +23,7 @@ onstart:
     os.system('echo "  CONDA VERSION: $(conda --version)"')
 
 
-FIDs, = glob_wildcards("fastq/{sample}_L001_R1_001.fastq.gz")
+FIDs, = glob_wildcards("fastq/{samples}_L003_R1_001.fastq.gz")
 
 
 rule all:
@@ -43,25 +43,30 @@ rule all:
 
 rule sana:
     input:
-        read1 = "fastq/{sample}_L001_R1_001.fastq.gz",
-        read2 = "fastq/{sample}_L001_R2_001.fastq.gz"
+        read1 = "fastq/{samples}_L003_R1_001.fastq.gz",
+        read2 = "fastq/{samples}_L003_R2_001.fastq.gz",
+        read3 = "fastq/{samples}_L004_R1_001.fastq.gz",
+        read4 = "fastq/{samples}_L004_R1_001.fastq.gz",
     output:
-        "results/01_readMasking/{sample}.sana.fastq.gz"
+        temp("results/01_readMasking/{samples}.sana.fastq.gz"),
     log:
-        "logs/sana.{sample}.log"
+        "logs/sana.{samples}.log"
     conda:
         "seqkit"
-    threads: 2
-    resources: #TODO
+    benchmark:
+        "benchmarks/sana.{samples}.log"
+    threads: 8
+    resources:
+        time = "00:60:00",
+        partition = "large,milan",
+        mem_gb = 4,
     shell:
-        "seqkit sana -j {threads} {input.read1} > {output} 2> {log} "
-        "&& "
-        "seqkit sana -j {threads} {input.read1} >> {output} 2>> {log} "
+        "seqkit sana -j {threads} {input.read1} {input.read2} {input.read3} {input.read4} > {output} 2> {log} "
 
 
 checkpoint seqkitRaw:
     input:
-        expand("results/01_readMasking/{sample}.sana.fastq.gz", samples = FIDs),
+        expand("results/01_readMasking/{samples}.sana.fastq.gz", samples = FIDs),
     output:
         'results/00_QC/seqkit.report.raw.txt'
     benchmark:
@@ -83,7 +88,7 @@ checkpoint seqkitRaw:
 # STANDARD READ FILTERING AND QC RULES
 rule bbduk:
     input:
-        reads = 'results/01_readMasking/{sample}.sana.fastq.gz',
+        reads = 'results/01_readMasking/{samples}.sana.fastq.gz',
     output:
         bbdukReads = temp('results/01_readMasking/{samples}.sana.bbduk.fastq.gz')
     log:
@@ -95,10 +100,10 @@ rule bbduk:
     conda:
         #'env/bbduk.yaml'
         'bbduk'
-    threads:4
+    threads:8
     resources:
-        mem_gb=2,
-        time="00:05:00",
+        mem_gb=4,
+        time="00:30:00",
         partition='large,milan',
     shell:
         'bbduk.sh '
@@ -129,10 +134,10 @@ rule prinseq:
         #'env/prinseqPP.yaml'
         'prinseqpp'
     resources:
-        mem_gb=2,
-        time="00:10:00",
+        mem_gb=4,
+        time="00:60:00",
         partition='large,milan',
-    threads:4
+    threads:8
     shell:
         'prinseq++ '
         '-threads {threads} '
@@ -196,10 +201,10 @@ rule kneaddata:
         'logs/kneaddata/{samples}.kneaddata.log'
 #    benchmark:
 #        'benchmarks/kneaddata.{samples}.txt'
-    threads: 8
+    threads: 12
     resources:
-        mem_gb=24,
-        time="00:14:00",
+        mem_gb=32,
+        time="00:60:00",
         partition='large,milan',
     message:
         'kneaddata: {wildcards.samples}\n'
