@@ -100,7 +100,7 @@ rule bbduk:
     conda:
         #'env/bbduk.yaml'
         'bbduk'
-    threads:8
+    threads: 8
     resources:
         mem_gb = lambda wildcards, attempt: 4 + ((attempt - 1) + 4),
         time = lambda wildcards, attempt: 30 + ((attempt - 1) + 30),
@@ -133,7 +133,7 @@ rule prinseq:
     conda:
         #'env/prinseqPP.yaml'
         'prinseqpp'
-    threads:8
+    threads: 8
     resources:
         mem_gb = lambda wildcards, attempt: 4 + ((attempt - 1) + 4),
         time = lambda wildcards, attempt: 60 + ((attempt - 1) + 30),
