@@ -79,7 +79,7 @@ checkpoint seqkitRaw:
     threads: 32
     resources:
         mem_gb = lambda wildcards, attempt: 4 + ((attempt - 1) * 4),
-        time = lambda wildcards, attempt: 90 + ((attempt - 1) * 60),
+        time = lambda wildcards, attempt: 180 + ((attempt - 1) * 60),
         partition="large,milan"
     shell:
         'seqkit stats -j {threads} -a {input} > {output} '
