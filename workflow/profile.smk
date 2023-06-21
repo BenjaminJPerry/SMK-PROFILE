@@ -37,16 +37,13 @@ onstart:
 
 rule all:
     input:
-        "results/centrifuge.counts.tsv",
-        "results/centrifuge.counts.biom",
-
         "results/kraken2.counts.tsv",
         "results/kraken2.counts.biom",
-
         "results/bracken.k2.counts.tsv",
-        "results/bracken.k2.counts.biom",
-
-        expand("results/03_humann3Uniref50EC/{sample}_pathcoverage.tsv", sample=FIDs),
+#       "results/bracken.k2.counts.biom",
+        #"results/centrifuge.counts.tsv",
+        #"results/centrifuge.counts.biom",
+        #expand("results/03_humann3Uniref50EC/{sample}_pathcoverage.tsv", sample=FIDs),
 
 
 localrules:
@@ -58,7 +55,7 @@ rule generateCentrifugeSampleSheet:
         sampleSheet = "resources/centrifugeSampleSheet.tsv",
     threads: 2
     shell:
-        "./workflow/scripts/generate_centrifuge_sample_sheet.sh -d results/02_kneaddata -p fastq -o {output.sampleSheet} "
+        "./workflow/scripts/generate_centrifuge_sample_sheet.sh -d results/02_kneaddata -p fastq.gz -o {output.sampleSheet} "
 
 
 wildcard_constraints:
@@ -177,7 +174,7 @@ rule taxpastaCentrifugeBiom:
 #KRAKEN2 RULES
 rule kraken2GTDB:
     input:
-        KDRs = "results/02_kneaddata/{sample}.fastq",
+        KDRs = "results/02_kneaddata/{sample}.fastq.gz",
     output:
         k2OutputGTDB = "results/03_kraken2GTDB/{sample}.k2",
         k2ReportGTDB = "results/03_kraken2GTDB/{sample}.kraken2",
@@ -189,8 +186,8 @@ rule kraken2GTDB:
         "kraken2"
     threads: 32
     resources:
-        mem_gb = lambda wildcards, attempt: 324 + ((attempt - 1) * 20),
-        time = lambda wildcards, attempt: 12 + ((attempt - 1) * 5),
+        mem_gb = lambda wildcards, attempt: 340 + ((attempt - 1) * 20),
+        time = lambda wildcards, attempt: 15 + ((attempt - 1) * 60),
         partition = "milan"
     shell:
         "kraken2 "
@@ -209,7 +206,7 @@ rule taxpastaKraken2:
     input:
         expand("results/03_kraken2GTDB/{sample}.kraken2", sample = FIDs),
     output:
-        "results/kraken2.counts.tsv",
+        "results/metagenomes.kraken2.genus.GTDB207.tsv",
     benchmark:
         "benchmarks/taxpastaKraken2.txt"
     conda:
@@ -287,62 +284,30 @@ rule brackenSpecies:
         "&> {log} "
 
 
-rule taxpastaKraken2Bracken:
+rule mergeKraken2Bracken:
     input:
         expand("results/03_brackenSpecies/{sample}.bracken", sample = FIDs),
     output:
-        "results/bracken.k2.counts.tsv",
+        "results/metagenomes.bracken.k2.species.GTDB207.tsv",
     benchmark:
         "benchmarks/taxpastaKraken2Bracken.txt"
     conda:
-        "taxpasta"
+        "kraken2"
     threads: 2
     resources:
-        mem_gb = lambda wildcards, attempt: 32 + ((attempt - 1) * 8),
-        time = lambda wildcards, attempt: 1440 + ((attempt - 1) * 1440),
+        mem_gb = lambda wildcards, attempt: 48 + ((attempt - 1) * 8),
+        time = lambda wildcards, attempt: 2880 + ((attempt - 1) * 1440),
         partition = "large,milan"
     shell:
-        "taxpasta merge "
-        "-p bracken "
-        "-o {output} "
-        "--output-format TSV "
-        "--taxonomy /nesi/nobackup/agresearch03843/kraken2-GTDB/GTDB/taxonomy "
-        "--add-name "
-        "--add-rank "
-        "--add-lineage "
-        "--summarise-at species "
-        "{input} "
-
-
-rule taxpastaKraken2BrackenBiom:
-    input:
-        expand("results/03_brackenSpecies/{sample}.bracken", sample = FIDs),
-    output:
-        "results/bracken.k2.counts.biom",
-    benchmark:
-        "benchmarks/taxpastaKraken2BrackenBiom.txt"
-    conda:
-        "taxpasta"
-    threads: 2
-    resources:
-        mem_gb = lambda wildcards, attempt: 32 + ((attempt - 1) * 8),
-        time = lambda wildcards, attempt: 1440 + ((attempt - 1) * 1440),
-        partition = "large,milan"
-    shell:
-        "taxpasta merge "
-        "-p bracken "
-        "-o {output} "
-        "--output-format BIOM "
-        "--taxonomy /nesi/nobackup/agresearch03843/kraken2-GTDB/GTDB/taxonomy "
-        "--add-name "
-        "--summarise-at species "
-        "{input} "
+        "combine_bracken_outputs.py "
+        "--files {input} "
+        "-o {output}"
 
 
 # HUMANN# RULES
 rule humann3Uniref50EC:
     input:
-        kneaddataReads = "results/02_kneaddata/{sample}.fastq",
+        kneaddataReads = "results/02_kneaddata/{sample}.fastq.gz",
     output:
         genes = "results/03_humann3Uniref50EC/{sample}_genefamilies.tsv",
         pathways = "results/03_humann3Uniref50EC/{sample}_pathabundance.tsv",
@@ -353,10 +318,10 @@ rule humann3Uniref50EC:
         "benchmarks/humann3Uniref50EC.{sample}.txt"
     conda:
         "biobakery"
-    threads: 16
+    threads: 24
     resources:
-        mem_gb = lambda wildcards, attempt: 24 + ((attempt - 1) + 12),
-        time = lambda wildcards, attempt: 24 + ((attempt - 1) + 12),
+        mem_gb = lambda wildcards, attempt: 32 + ((attempt - 1) + 8),
+        time = lambda wildcards, attempt: 30 + ((attempt - 1) + 30),
         partition = "large,milan"
     message:
         "humann3 profiling with uniref50EC: {wildcards.sample}\n"
@@ -367,7 +332,7 @@ rule humann3Uniref50EC:
         "--bypass-nucleotide-search "
         "--search-mode uniref50 "
         "--protein-database /nesi/nobackup/agresearch03843/biobakery/biobakery/humann3/unirefECFilt "
-        "--input-format fastq "
+        "--input-format fastq.gz "
         "--output results/03_humann3Uniref50EC "
         "--input {input.kneaddataReads} "
         "--output-basename {wildcards.sample} "
